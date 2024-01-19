@@ -12,7 +12,7 @@
     <meta name="keywords"
         content="admin template, Vuexy admin template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="PIXINVENT">
-    <title> New Cairo | @yield('title') </title>
+    <title> وليد الترزى | @yield('title') </title>
 
     @include('dashboard.layouts.style')
 

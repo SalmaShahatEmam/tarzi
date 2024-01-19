@@ -27,7 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Article::observe(ArticleObserver::class);
-        JobVacancy::observe(JobVacancyObserver::class);
+        //
     }
 }

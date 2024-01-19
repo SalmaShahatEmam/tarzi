@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\RafaOrder;
 use Illuminate\Http\Request;
 
@@ -14,42 +15,37 @@ class RafaOrderController extends Controller
      */
     public function index()
     {
-        $orders = RafaOrder::get();
+        $orders = RafaOrder::with('client')->get();
 
-        return view('dashboard.services.index', compact('orders'));
+        return view('dashboard.orders.index', compact('orders'));
     }
 
     public function late()
     {
         $today  = date('Y-m-d');
 
-        $orders = RafaOrder::whereDate('delivery_date' ,'<' ,$today)->where('finish' , 'no')->get();
+        $orders = RafaOrder::whereDate('delivery_date', '<', $today)->where('finish', 'no')->get();
 
         return view('dashboard.solutions.index', compact('orders'));
-
-
     }
 
     public function delivery()
     {
         $today = date('Y-m-d');
 
-        $orders  = RafaOrder::where('delivery_date' , $today)->where('finish' ,'no')->get();
-        
-        return view('dashboard.categories.index', compact('orders'));
+        $orders  = RafaOrder::where('delivery_date', $today)->where('finish', 'no')->get();
 
+        return view('dashboard.categories.index', compact('orders'));
     }
 
     public function finish($order)
     {
         $order = RafaOrder::find($order);
 
-        $order->update(['finish' => 'yes']);
+        $order->update(['finish' => true]);
 
-        return redirect()->route('finish');
+        return redirect()->back()->with('success', __('models.update_success'));
     }
-
-
 
 
     /**
@@ -59,7 +55,9 @@ class RafaOrderController extends Controller
      */
     public function create()
     {
-        return view('dashboard.services.create');
+        $clients = Client::get();
+
+        return view('dashboard.orders.create', compact('clients'));
     }
 
     /**
@@ -70,24 +68,28 @@ class RafaOrderController extends Controller
      */
     public function store(Request $request)
     {
-       // dd($request->all());
+        // dd($request->all());
+        $data = $request->except('_token', 'price');
+
         $prices = $request->price;
-        $total_price = 0 ;
-        foreach($prices as $price)
-        {
+
+        $total_price = 0;
+
+        foreach ($prices as $price) {
             $total_price += $price;
         }
-        $order =  RafaOrder::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'total_price' => $total_price,
-            'delivery_date' => $request->date,
-            'details' =>json_encode($request->details),
-            'finish' =>'no'
-        ]);
 
-        return redirect()->route('rafaorders.index');
+        $data['total_price'] = $total_price;
 
+        if (is_array($request->details) && is_array($request->price)) {
+            $data['details'] = json_encode(array_combine($request->details, $request->price));
+        } else {
+            $data['details'] = json_encode([]);
+        }
+
+        $order =  RafaOrder::create($data);
+
+        return redirect()->route('rafaorders.index')->with('success', __('models.added_success'));
     }
 
     /**
@@ -111,7 +113,9 @@ class RafaOrderController extends Controller
     {
         $order = RafaOrder::find($id);
 
-        return view('dashboard.services.edit', compact('order'));
+        $clients = Client::get();
+
+        return view('dashboard.orders.edit', compact('order', 'clients'));
     }
 
     /**
@@ -123,7 +127,28 @@ class RafaOrderController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $data = $request->except('_token', 'price');
+
+        $prices = $request->price;
+        $total_price = 0;
+
+        foreach ($prices as $price) {
+            $total_price += $price;
+        }
+
+        $data['total_price'] = $total_price;
+
+        if (is_array($request->details) && is_array($request->price)) {
+            $data['details'] = json_encode(array_combine($request->details, $request->price));
+        } else {
+            $data['details'] = json_encode([]);
+        }
+
+        $order = RafaOrder::findOrFail($id);
+
+        $order->update($data);
+
+        return redirect()->route('rafaorders.index')->with('success', __('models.update_success'));
     }
 
     /**
@@ -138,6 +163,8 @@ class RafaOrderController extends Controller
 
         $order->delete();
 
-        return redirect()->back();
+        return \response()->json([
+            'message' => 'تم الحذف بنجاح',
+        ]);
     }
 }

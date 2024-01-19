@@ -15,11 +15,14 @@ class CreateRafaOrdersTable extends Migration
     {
         Schema::create('rafa_orders', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('phone');
+            $table->string('name')->nullable();
+            $table->string('phone')->nullable();
             $table->timestamp('delivery_date');
-            $table->string('details');
+            $table->longText('details');
             $table->string('total_price');
+            $table->enum('order_type', ['rafa', 'print']);
+            $table->boolean('finish')->default(false);
+            $table->foreignId('client_id')->constrained('clients')->cascadeOnDelete();
             $table->timestamps();
         });
     }

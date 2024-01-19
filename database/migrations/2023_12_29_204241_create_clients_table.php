@@ -29,7 +29,7 @@ class CreateClientsTable extends Migration
             $table->string('sadr_height');
             $table->string('sadr_width');
             $table->string('west_width');
-//////////////////////////////////////////
+            //////////////////////////////////////////
             $table->string('hnsh_height');
             $table->string('kamar_width');
             $table->string('higr_height');

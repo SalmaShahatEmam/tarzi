@@ -8,5 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class RafaOrder extends Model
 {
     use HasFactory;
-    protected $fillable = ['name' , 'phone' , 'details' , 'total_price' , 'delivery_date'];
+
+    protected $guarded = [];
+
+    protected $dates = ['delivery_date'];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 }
